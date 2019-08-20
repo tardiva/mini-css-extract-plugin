@@ -463,7 +463,18 @@ class MiniCssExtractPlugin {
       // Get ordered list of modules per chunk group
       // This loop also gathers dependencies from the ordered lists
       // Lists are in reverse order to allow to use Array.pop()
-      const modulesByChunkGroup = Array.from(chunk.groupsIterable, (cg) => {
+      const chunkGroupsSet = chunk.groupsIterable;
+
+      const entrypoint = compilation.chunkGroups.find((cg) => {
+        return cg.isInitial() && cg.options.name === chunk.name;
+      });
+      const chunkGroups = Array.from(chunkGroupsSet);
+
+      if (entrypoint && !chunkGroupsSet.has(entrypoint)) {
+        chunkGroups.unshift(entrypoint);
+      }
+
+      const modulesByChunkGroup = chunkGroups.map((cg) => {
         const sortedModules = modules
           .map((m) => {
             return {
